@@ -54,8 +54,8 @@ const faqs = [
 
 export default function FaqPage() {
   return (
-    <main className="min-h-screen bg-background">
-      <div className="container mx-auto max-w-3xl px-6 py-32">
+    <main className="bg-background">
+      <div className="container mx-auto max-w-3xl px-6 pt-32 pb-16">
         <div className="mb-16 text-center">
           <h1 className="text-5xl font-light tracking-tight">Frequently Asked Questions</h1>
           <p className="mt-4 text-lg text-foreground/60">Everything you need to know about our candles</p>

@@ -3,8 +3,8 @@ import { FooterGradient } from "@/components/footer-gradient"
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-background">
-      <div className="container mx-auto px-6 py-32">
+    <main className="bg-background">
+      <div className="container mx-auto px-6 pt-32 pb-16">
         {/* Hero Section */}
         <div className="mb-24 text-center">
           <h1 className="text-5xl font-light tracking-tight lg:text-6xl">About Savis Candles</h1>

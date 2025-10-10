@@ -40,34 +40,41 @@ const faqs = [
   },
 ]
 
-export function FaqSection() {
+interface FaqSectionProps {
+  isInteractive?: boolean
+}
+
+export function FaqSection({ isInteractive = false }: FaqSectionProps) {
   const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     if (!sectionRef.current) return
 
-    const items = gsap.utils.toArray<HTMLElement>(".faq-item")
+    // Only run animations if not interactive (for homepage)
+    if (!isInteractive) {
+      const items = gsap.utils.toArray<HTMLElement>(".faq-item")
 
-    // Slide in from left animation
-    gsap.fromTo(
-      items,
-      { opacity: 0, x: -50 },
-      {
-        opacity: 1,
-        x: 0,
-        duration: 0.8,
-        stagger: 0.15,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top center",
+      // Slide in from left animation
+      gsap.fromTo(
+        items,
+        { opacity: 0, x: -50 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 0.8,
+          stagger: 0.15,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top center",
+          },
         },
-      },
-    )
-  }, [])
+      )
+    }
+  }, [isInteractive])
 
   return (
-    <section ref={sectionRef} className="scroll-section relative flex min-h-screen items-center bg-background py-24">
+    <section ref={sectionRef} className="relative bg-background py-24 pb-32">
       <div className="container mx-auto max-w-3xl px-6">
         <h2 className="mb-16 text-center text-4xl font-light tracking-tight">Frequently Asked Questions</h2>
 

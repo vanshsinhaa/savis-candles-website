@@ -4,6 +4,7 @@ import { Space_Grotesk } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
+import { Providers } from "@/components/providers"
 import { Suspense } from "react"
 
 const spaceGrotesk = Space_Grotesk({
@@ -26,11 +27,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${spaceGrotesk.variable} font-sans antialiased`}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Navbar />
-          {children}
-          <Analytics />
-        </Suspense>
+        <Providers>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Navbar />
+            {children}
+            <Analytics />
+          </Suspense>
+        </Providers>
       </body>
     </html>
   )

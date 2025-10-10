@@ -19,8 +19,8 @@ export default function ShopPage() {
 
   return (
     <>
-      <main className="min-h-screen bg-background pt-24">
-        <div className="container mx-auto px-6 py-16">
+      <main className="bg-background pt-24">
+        <div className="container mx-auto px-6 pt-16 pb-16">
           <div className="mb-12 text-center">
             <h1 className="text-5xl font-light tracking-tight">Shop All Candles</h1>
             <p className="mt-4 text-lg text-foreground/60">

@@ -6,6 +6,7 @@ import { X } from "lucide-react"
 import type { Product } from "@/lib/products"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useCart } from "@/hooks/use-cart"
 
 interface QuickViewDrawerProps {
   product: Product | null
@@ -14,6 +15,8 @@ interface QuickViewDrawerProps {
 }
 
 export function QuickViewDrawer({ product, open, onOpenChange }: QuickViewDrawerProps) {
+  const { addItem } = useCart()
+
   // Lock body scroll when drawer is open
   useEffect(() => {
     if (open) {
@@ -89,7 +92,23 @@ export function QuickViewDrawer({ product, open, onOpenChange }: QuickViewDrawer
               </div>
 
               {/* Add to Cart Button */}
-              <Button className="w-full" size="lg">
+              <Button 
+                className="w-full" 
+                size="lg"
+                onClick={() => {
+                  if (product) {
+                    addItem({
+                      id: product.id,
+                      name: product.name,
+                      price: product.price,
+                      image: product.image,
+                      description: product.description,
+                      quantity: 1
+                    })
+                    onOpenChange(false) // Close drawer after adding to cart
+                  }
+                }}
+              >
                 Add to Cart
               </Button>
             </div>

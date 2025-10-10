@@ -47,7 +47,7 @@ export function ProductGridSection() {
 
   return (
     <>
-      <section ref={sectionRef} className="scroll-section relative flex min-h-screen items-center bg-background py-24">
+      <section ref={sectionRef} className="relative bg-background py-24">
         <div className="container mx-auto px-6">
           <h2 className="mb-16 text-center text-4xl font-light tracking-tight">Our Collection</h2>
 
@@ -57,7 +57,7 @@ export function ProductGridSection() {
               <div
                 key={product.id}
                 className={cn(
-                  "product-card group relative cursor-pointer transition-opacity duration-300",
+                  "product-item product-card group relative cursor-pointer transition-opacity duration-300",
                   hoveredId && hoveredId !== product.id && "opacity-30",
                 )}
                 onMouseEnter={() => setHoveredId(product.id)}
