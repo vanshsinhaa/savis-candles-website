@@ -47,12 +47,12 @@ export function ProductGridSection() {
 
   return (
     <>
-      <section ref={sectionRef} className="relative bg-background py-24">
-        <div className="container mx-auto px-6">
-          <h2 className="mb-16 text-center text-4xl font-light tracking-tight">Our Collection</h2>
+      <section ref={sectionRef} className="relative bg-background py-16 sm:py-20 lg:py-24">
+        <div className="container mx-auto px-4 sm:px-6">
+          <h2 className="mb-8 sm:mb-12 lg:mb-16 text-center text-2xl sm:text-3xl lg:text-4xl font-light tracking-tight">Our Collection</h2>
 
-          {/* 4x2 Grid */}
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Responsive Grid */}
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {products.map((product) => (
               <div
                 key={product.id}
@@ -75,8 +75,8 @@ export function ProductGridSection() {
                 </div>
 
                 {/* Product Info */}
-                <div className="mt-4 text-center">
-                  <h3 className="text-lg font-medium tracking-tight">{product.name}</h3>
+                <div className="mt-3 sm:mt-4 text-center">
+                  <h3 className="text-base sm:text-lg font-medium tracking-tight">{product.name}</h3>
                   <p className="mt-1 text-sm text-foreground/60">${product.price}</p>
                 </div>
 

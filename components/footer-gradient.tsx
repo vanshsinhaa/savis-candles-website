@@ -18,12 +18,12 @@ export function FooterGradient() {
         >
       {/* Content overlay */}
       <div className="relative z-10 h-full flex flex-col justify-center">
-        <div className="container mx-auto px-6 py-16">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-16">
+          <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-4">
             {/* Company Info */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">savis candles</h3>
-              <p className="text-sm text-white/70">
+            <div className="space-y-3 sm:space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold text-white">savis candles</h3>
+              <p className="text-xs sm:text-sm text-white/70">
                 Handcrafted luxury candles made with premium soy wax and natural fragrances. 
                 Creating moments of tranquility and warmth for your home.
               </p>
@@ -56,9 +56,9 @@ export function FooterGradient() {
             </div>
 
             {/* Quick Links */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">Quick Links</h3>
-              <ul className="space-y-2 text-sm">
+            <div className="space-y-3 sm:space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold text-white">Quick Links</h3>
+              <ul className="space-y-2 text-xs sm:text-sm">
                 <li><a href="/" className="text-white/70 hover:text-white transition-colors">Home</a></li>
                 <li><a href="/shop" className="text-white/70 hover:text-white transition-colors">Shop</a></li>
                 <li><a href="/about" className="text-white/70 hover:text-white transition-colors">About Us</a></li>
@@ -68,9 +68,9 @@ export function FooterGradient() {
             </div>
 
             {/* Customer Service */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">Customer Service</h3>
-              <ul className="space-y-2 text-sm">
+            <div className="space-y-3 sm:space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold text-white">Customer Service</h3>
+              <ul className="space-y-2 text-xs sm:text-sm">
                 <li><a href="#" className="text-white/70 hover:text-white transition-colors">Shipping Info</a></li>
                 <li><a href="#" className="text-white/70 hover:text-white transition-colors">Returns & Exchanges</a></li>
                 <li><a href="#" className="text-white/70 hover:text-white transition-colors">Size Guide</a></li>
@@ -80,22 +80,22 @@ export function FooterGradient() {
             </div>
 
             {/* Contact Info */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">Contact Us</h3>
-              <div className="space-y-2 text-sm text-white/70">
+            <div className="space-y-3 sm:space-y-4">
+              <h3 className="text-base sm:text-lg font-semibold text-white">Contact Us</h3>
+              <div className="space-y-2 text-xs sm:text-sm text-white/70">
                 <p>📧 hello@saviscandles.com</p>
                 <p>📞 (555) 123-CANDLE</p>
                 <p>📍 123 Candle Lane<br />San Francisco, CA 94102</p>
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-white">Newsletter Signup</p>
+                <p className="text-xs sm:text-sm font-medium text-white">Newsletter Signup</p>
                 <div className="flex">
                   <input
                     type="email"
                     placeholder="Enter your email"
-                    className="flex-1 rounded-l-md border border-white/20 bg-white/10 backdrop-blur-sm px-3 py-2 text-sm text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    className="flex-1 rounded-l-md border border-white/20 bg-white/10 backdrop-blur-sm px-2 sm:px-3 py-2 text-xs sm:text-sm text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
                   />
-                  <button className="rounded-r-md bg-white/20 backdrop-blur-sm px-4 py-2 text-sm text-white hover:bg-white/30 transition-colors">
+                  <button className="rounded-r-md bg-white/20 backdrop-blur-sm px-3 sm:px-4 py-2 text-xs sm:text-sm text-white hover:bg-white/30 transition-colors">
                     Subscribe
                   </button>
                 </div>
@@ -104,12 +104,12 @@ export function FooterGradient() {
           </div>
 
           {/* Bottom section */}
-          <div className="mt-12 border-t border-white/20 pt-8">
+          <div className="mt-8 sm:mt-12 border-t border-white/20 pt-6 sm:pt-8">
             <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
-              <div className="text-sm text-white/60">
+              <div className="text-xs sm:text-sm text-white/60 text-center md:text-left">
                 © {new Date().getFullYear()} savis candles. All rights reserved.
               </div>
-              <div className="flex space-x-6 text-sm">
+              <div className="flex flex-wrap justify-center md:justify-end gap-4 sm:gap-6 text-xs sm:text-sm">
                 <a href="#" className="text-white/60 hover:text-white transition-colors">Privacy Policy</a>
                 <a href="#" className="text-white/60 hover:text-white transition-colors">Terms of Service</a>
                 <a href="#" className="text-white/60 hover:text-white transition-colors">Cookie Policy</a>
