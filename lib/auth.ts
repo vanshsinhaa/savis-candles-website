@@ -19,7 +19,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       // Add user ID to session for API calls
       if (session.user && token.sub) {
-        session.user.id = token.sub
+        (session.user as { id?: string }).id = token.sub
       }
       return session
     },

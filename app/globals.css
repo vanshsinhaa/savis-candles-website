@@ -79,7 +79,10 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading), Georgia, serif;
   }
 
   /* Smooth scrolling for section snapping */
@@ -111,7 +114,30 @@
   }
 }
 
-/* Animated footer gradient animations */
+/* ── Cart micro-interaction keyframes ─────────────────────────────────────── */
+
+/* Ghost product floats upward toward cart icon after Add to Cart */
+@keyframes ghostFloat {
+  0%   { opacity: 0.7; transform: translate(-50%, 0)     scale(1);   }
+  60%  { opacity: 0.3; transform: translate(-50%, -50px) scale(0.6); }
+  100% { opacity: 0;   transform: translate(-50%, -80px) scale(0.3); }
+}
+
+/* Button bounce: shrinks then springs back */
+@keyframes buttonBounce {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.95); }
+  65%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+/* Cart items stagger-fade in when panel opens */
+@keyframes cartItemIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Animated footer gradient animations ───────────────────────────────────── */
 @keyframes gradientMove {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -178,20 +204,117 @@
   .animate-first {
     animation: first 8s ease-in-out infinite;
   }
-  
+
   .animate-second {
     animation: second 8s ease-in-out infinite;
   }
-  
+
   .animate-third {
     animation: third 8s ease-in-out infinite;
   }
-  
+
   .animate-fourth {
     animation: fourth 8s ease-in-out infinite;
   }
-  
+
   .animate-fifth {
     animation: fifth 8s ease-in-out infinite;
   }
 }
+
+/* ── Scroll-reveal system ──────────────────────────────────────────────────── */
+
+/* Cards and general items: rise 20px on enter */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity  0.6s cubic-bezier(0.25, 0.1, 0.25, 1),
+    transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: opacity, transform;
+}
+
+/* Section headings: rise only 15px for a subtler feel */
+.reveal-heading {
+  opacity: 0;
+  transform: translateY(15px);
+  transition:
+    opacity  0.6s cubic-bezier(0.25, 0.1, 0.25, 1),
+    transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible,
+.reveal-heading.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Skip all reveal animations when OS reduced-motion is on */
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-heading {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── Hero page-load animations ─────────────────────────────────────────────── */
+/* Applied to subheading and CTA only — heading already uses TextGenerateEffect  */
+/* Desktop only: on mobile, content above the fold is shown immediately          */
+
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (min-width: 768px) {
+  /* subheading: 0.3s after heading's 0.6s start = 0.9s */
+  .hero-animate-sub {
+    opacity: 0;
+    animation: heroFadeUp 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) 0.9s forwards;
+  }
+  /* CTA: 0.3s after subheading = 1.2s */
+  .hero-animate-cta {
+    opacity: 0;
+    animation: heroFadeUp 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) 1.2s forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-animate-sub,
+  .hero-animate-cta {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+}
+
+/* ── Ember chat widget ─────────────────────────────────────────────────────── */
+
+/* Pulse on the closed chat bubble to draw attention */
+@keyframes emberPulse {
+  0%   { box-shadow: 0 0 0 0   rgba(0, 0, 0, 0.25); }
+  70%  { box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);    }
+  100% { box-shadow: 0 0 0 0   rgba(0, 0, 0, 0);     }
+}
+
+.animate-ember-pulse {
+  animation: emberPulse 2s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ember-pulse { animation: none; }
+}
+
+/* Three-dot typing indicator */
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%            { transform: translateY(-5px); opacity: 1; }
+}
+
+.typing-dot {
+  animation: typingBounce 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.typing-dot:nth-child(3) { animation-delay: 0.30s; }

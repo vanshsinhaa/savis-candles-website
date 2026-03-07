@@ -17,6 +17,11 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        heading: ["var(--font-heading)", "Georgia", "serif"],
+        body: ["var(--font-body)", "system-ui", "sans-serif"],
+        sans: ["var(--font-body)", "system-ui", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

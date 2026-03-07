@@ -36,7 +36,7 @@ export function NewsletterSection() {
       <div className="container mx-auto max-w-4xl px-6">
         <div className="newsletter-item rounded-2xl bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 p-12 text-center shadow-sm">
           <div className="mb-8">
-            <h2 className="mb-4 text-4xl font-light tracking-tight">Stay in the Glow</h2>
+            <h2 className="mb-4 font-heading text-4xl font-light tracking-wide">Stay in the Glow</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Be the first to know about new fragrances, exclusive offers, and behind-the-scenes 
               glimpses into our candle-making process.

@@ -1,10 +1,7 @@
 "use client"
 
-import { useEffect, useRef } from "react"
-import { gsap } from "gsap"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
-
-gsap.registerPlugin(ScrollTrigger)
+import { useRef } from "react"
+import { useScrollReveal } from "@/hooks/use-scroll-reveal"
 
 const testimonials = [
   {
@@ -13,7 +10,6 @@ const testimonials = [
     location: "San Francisco, CA",
     rating: 5,
     text: "The Midnight Jasmine candle has become the centerpiece of my evening routine. The scent is absolutely intoxicating and the burn time is incredible. I've already ordered three more!",
-    avatar: "/api/placeholder/60/60"
   },
   {
     id: 2,
@@ -21,7 +17,6 @@ const testimonials = [
     location: "Austin, TX",
     rating: 5,
     text: "As someone who's tried countless candle brands, savis candles truly stand out. The quality is unmatched and the packaging is so elegant. These make perfect gifts!",
-    avatar: "/api/placeholder/60/60"
   },
   {
     id: 3,
@@ -29,7 +24,6 @@ const testimonials = [
     location: "Portland, OR",
     rating: 5,
     text: "The Ocean Breeze candle transports me to the coast every time I light it. The throw is perfect - not overwhelming but definitely noticeable throughout my entire home.",
-    avatar: "/api/placeholder/60/60"
   },
   {
     id: 4,
@@ -37,7 +31,6 @@ const testimonials = [
     location: "Seattle, WA",
     rating: 5,
     text: "I love that these are made with natural soy wax. As someone who's environmentally conscious, it's great to find a brand that aligns with my values without compromising on quality.",
-    avatar: "/api/placeholder/60/60"
   },
   {
     id: 5,
@@ -45,7 +38,6 @@ const testimonials = [
     location: "Los Angeles, CA",
     rating: 5,
     text: "The customer service is phenomenal and the candles are even better. The Warm Vanilla scent is my go-to for creating a cozy atmosphere during movie nights.",
-    avatar: "/api/placeholder/60/60"
   },
   {
     id: 6,
@@ -53,40 +45,19 @@ const testimonials = [
     location: "Denver, CO",
     rating: 5,
     text: "These candles have completely transformed my home office. The subtle fragrance helps me focus and the beautiful packaging adds a touch of luxury to my workspace.",
-    avatar: "/api/placeholder/60/60"
-  }
+  },
 ]
 
 export function TestimonialsSection() {
   const sectionRef = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    if (!sectionRef.current) return
-
-    const items = gsap.utils.toArray<HTMLElement>(".testimonial-item")
-
-    gsap.fromTo(
-      items,
-      { opacity: 0, y: 30 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top center",
-        },
-      },
-    )
-  }, [])
+  useScrollReveal(sectionRef)
 
   return (
     <section ref={sectionRef} className="relative bg-background py-24">
       <div className="container mx-auto max-w-7xl px-6">
-        <div className="mb-16 text-center">
-          <h2 className="mb-4 text-4xl font-light tracking-tight">What Our Customers Say</h2>
+        {/* Heading block revealed as one unit, 15px rise */}
+        <div className="reveal-heading mb-16 text-center">
+          <h2 className="mb-4 font-heading text-4xl font-light tracking-wide">What Our Customers Say</h2>
           <p className="text-lg text-muted-foreground">
             Join thousands of satisfied customers who've made savis candles a part of their daily ritual.
           </p>
@@ -94,7 +65,7 @@ export function TestimonialsSection() {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((testimonial) => (
-            <div key={testimonial.id} className="testimonial-item">
+            <div key={testimonial.id} className="reveal">
               <div className="rounded-xl bg-card p-6 shadow-sm">
                 <div className="mb-4 flex items-center space-x-1">
                   {[...Array(testimonial.rating)].map((_, i) => (
@@ -103,11 +74,11 @@ export function TestimonialsSection() {
                     </svg>
                   ))}
                 </div>
-                
+
                 <blockquote className="mb-4 text-sm leading-relaxed text-foreground/80">
                   "{testimonial.text}"
                 </blockquote>
-                
+
                 <div className="flex items-center space-x-3">
                   <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
                     <span className="text-sm font-medium text-muted-foreground">

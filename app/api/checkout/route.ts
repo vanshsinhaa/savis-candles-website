@@ -22,6 +22,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No items provided' }, { status: 400 })
     }
 
+    // ── Stock validation — check BEFORE creating the order ───────────────────
+    const requestedNames = items.map((item: any) => item.name)
+    const { data: stockData, error: stockError } = await supabase
+      .from('products')
+      .select('name, stock_quantity')
+      .in('name', requestedNames)
+
+    if (stockError) {
+      console.error('Error checking product stock:', stockError)
+      return NextResponse.json({ error: 'Failed to verify product availability' }, { status: 500 })
+    }
+
+    for (const item of items) {
+      const product = stockData?.find((p: any) => p.name === item.name)
+      if (!product) {
+        return NextResponse.json(
+          { error: `"${item.name}" is no longer available` },
+          { status: 400 }
+        )
+      }
+      if (product.stock_quantity === 0) {
+        return NextResponse.json(
+          { error: `Sorry, ${item.name} is sold out` },
+          { status: 400 }
+        )
+      }
+      if (product.stock_quantity < item.quantity) {
+        return NextResponse.json(
+          { error: `Sorry, ${item.name} only has ${product.stock_quantity} left in stock` },
+          { status: 400 }
+        )
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     // Calculate total amount
     const totalAmount = items.reduce((sum: number, item: any) => {
       return sum + (item.price * item.quantity)

@@ -110,7 +110,6 @@ export function ProductModal({ isOpen, onClose, product }: ProductModalProps) {
                     price: price,
                     image: product.image,
                     description: product.description || '',
-                    quantity: 1
                   })
                   onClose()
                 }

@@ -1,65 +1,41 @@
 "use client"
 
-import { useEffect, useRef } from "react"
-import { gsap } from "gsap"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
-
-gsap.registerPlugin(ScrollTrigger)
+import { useRef } from "react"
+import { useScrollReveal } from "@/hooks/use-scroll-reveal"
 
 export function AboutSection() {
   const sectionRef = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    if (!sectionRef.current) return
-
-    const items = gsap.utils.toArray<HTMLElement>(".about-item")
-
-    gsap.fromTo(
-      items,
-      { opacity: 0, y: 50 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top center",
-        },
-      },
-    )
-  }, [])
+  useScrollReveal(sectionRef)
 
   return (
     <section ref={sectionRef} className="relative bg-background py-24">
       <div className="container mx-auto max-w-6xl px-6">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-20">
           {/* Left side - Story */}
-          <div className="about-item space-y-8">
+          <div className="reveal space-y-8">
             <div className="space-y-4">
-              <h2 className="text-4xl font-light tracking-tight">Our Story</h2>
+              <h2 className="font-heading text-4xl font-light tracking-wide">Our Story</h2>
               <p className="text-lg text-muted-foreground">
                 Born from a passion for creating moments of tranquility and warmth.
               </p>
             </div>
-            
+
             <div className="space-y-6 text-foreground/80 leading-relaxed">
               <p>
-                At savis candles, we believe that every home deserves the gentle glow of handcrafted luxury. 
-                Founded in 2023, our journey began with a simple vision: to create candles that don't just 
+                At savis candles, we believe that every home deserves the gentle glow of handcrafted luxury.
+                Founded in 2023, our journey began with a simple vision: to create candles that don't just
                 illuminate spaces, but transform them into sanctuaries of peace and comfort.
               </p>
-              
+
               <p>
-                Each candle is meticulously crafted using 100% natural soy wax, premium fragrance oils, 
-                and lead-free cotton wicks. Our small-batch approach ensures that every product meets our 
+                Each candle is meticulously crafted using 100% natural soy wax, premium fragrance oils,
+                and lead-free cotton wicks. Our small-batch approach ensures that every product meets our
                 uncompromising standards for quality, sustainability, and beauty.
               </p>
-              
+
               <p>
-                From our studio in San Francisco, we pour our hearts into every candle, knowing that 
-                somewhere in the world, someone is creating a moment of joy, relaxation, or connection 
+                From our studio in San Francisco, we pour our hearts into every candle, knowing that
+                somewhere in the world, someone is creating a moment of joy, relaxation, or connection
                 with the gentle flicker of our flame.
               </p>
             </div>
@@ -81,10 +57,10 @@ export function AboutSection() {
           </div>
 
           {/* Right side - Values */}
-          <div className="about-item space-y-8">
+          <div className="reveal space-y-8">
             <div className="space-y-6">
-              <h3 className="text-2xl font-light">Our Values</h3>
-              
+              <h3 className="font-heading text-2xl font-light">Our Values</h3>
+
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10">
@@ -132,7 +108,7 @@ export function AboutSection() {
 
             <div className="rounded-lg bg-muted/50 p-6">
               <blockquote className="text-lg italic text-foreground/80">
-                "Creating candles isn't just our business—it's our way of spreading warmth, 
+                "Creating candles isn't just our business—it's our way of spreading warmth,
                 one flame at a time."
               </blockquote>
               <cite className="mt-4 block text-sm text-muted-foreground">

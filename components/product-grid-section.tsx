@@ -1,92 +1,84 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { gsap } from "gsap"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
-import Image from "next/image"
-import { products, type Product } from "@/lib/products"
-import { cn } from "@/lib/utils"
+import { ProductDisplay, toProductDisplay, Product } from "@/lib/supabase"
 import { QuickViewDrawer } from "@/components/quick-view-drawer"
-
-gsap.registerPlugin(ScrollTrigger)
+import { ProductCard } from "@/components/product-card"
+import { useScrollReveal } from "@/hooks/use-scroll-reveal"
 
 export function ProductGridSection() {
   const sectionRef = useRef<HTMLElement>(null)
+  const [products, setProducts] = useState<ProductDisplay[]>([])
+  const [loading, setLoading] = useState(true)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<ProductDisplay | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
+  // Re-run observer once products load so the freshly-rendered cards are found
+  useScrollReveal(sectionRef, products.length)
+
   useEffect(() => {
-    if (!sectionRef.current) return
-
-    const cards = gsap.utils.toArray<HTMLElement>(".product-card")
-
-    // Stagger fade-in animation
-    gsap.fromTo(
-      cards,
-      { opacity: 0, y: 40 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        stagger: 0.1,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top center",
-          end: "bottom center",
-        },
-      },
-    )
+    fetchProducts()
   }, [])
 
-  const handleProductClick = (product: Product) => {
+  const fetchProducts = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/products')
+      if (!response.ok) throw new Error('Failed to fetch products')
+      const data = await response.json()
+      const displayProducts = data.products
+        .slice(0, 8)
+        .map((p: Product) => toProductDisplay(p))
+      setProducts(displayProducts)
+    } catch (err) {
+      console.error('Error fetching products:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleProductClick = (product: ProductDisplay) => {
     setSelectedProduct(product)
     setIsDrawerOpen(true)
   }
 
   return (
     <>
-      <section ref={sectionRef} className="relative bg-background py-16 sm:py-20 lg:py-24">
+      <section ref={sectionRef} className="relative bg-background py-20 sm:py-24 lg:py-32">
         <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="mb-8 sm:mb-12 lg:mb-16 text-center text-2xl sm:text-3xl lg:text-4xl font-light tracking-tight">Our Collection</h2>
+          <h2 className="reveal-heading mb-12 sm:mb-16 lg:mb-20 text-center font-heading text-2xl sm:text-3xl lg:text-4xl font-light tracking-wide">
+            Our Collection
+          </h2>
 
-          {/* Responsive Grid */}
-          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className={cn(
-                  "product-item product-card group relative cursor-pointer transition-opacity duration-300",
-                  hoveredId && hoveredId !== product.id && "opacity-30",
-                )}
-                onMouseEnter={() => setHoveredId(product.id)}
-                onMouseLeave={() => setHoveredId(null)}
-                onClick={() => handleProductClick(product)}
-              >
-                {/* Product Image */}
-                <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-secondary">
-                  <Image
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+          {loading ? (
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-secondary" />
+                  <div className="mt-4 space-y-2">
+                    <div className="h-4 bg-secondary rounded w-3/4 mx-auto" />
+                    <div className="h-4 bg-secondary rounded w-1/2 mx-auto" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {products.map((product) => (
+                // Wrapper carries the reveal class so ProductCard's dimming opacity is unaffected
+                <div key={product.id} className="reveal">
+                  <ProductCard
+                    product={product}
+                    onCardClick={handleProductClick}
+                    dimmed={hoveredId !== null && hoveredId !== product.id}
+                    onMouseEnter={() => setHoveredId(product.id)}
+                    onMouseLeave={() => setHoveredId(null)}
                   />
                 </div>
-
-                {/* Product Info */}
-                <div className="mt-3 sm:mt-4 text-center">
-                  <h3 className="text-base sm:text-lg font-medium tracking-tight">{product.name}</h3>
-                  <p className="mt-1 text-sm text-foreground/60">${product.price}</p>
-                </div>
-
-                {/* Spotlight effect on hover */}
-                <div className="pointer-events-none absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                  <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-white/10 to-transparent" />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

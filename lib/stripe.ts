@@ -6,7 +6,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_key', {
-  apiVersion: '2023-10-16',
+  apiVersion: '2025-09-30.clover',
 })
 
 export const formatAmountForStripe = (amount: number, currency: string): number => {

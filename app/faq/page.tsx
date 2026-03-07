@@ -55,10 +55,10 @@ const faqs = [
 export default function FaqPage() {
   return (
     <main className="bg-background">
-      <div className="container mx-auto max-w-3xl px-6 pt-32 pb-16">
-        <div className="mb-16 text-center">
-          <h1 className="text-5xl font-light tracking-tight">Frequently Asked Questions</h1>
-          <p className="mt-4 text-lg text-foreground/60">Everything you need to know about our candles</p>
+      <div className="container mx-auto max-w-3xl px-6 pt-32 pb-24">
+        <div className="mb-20 text-center">
+          <h1 className="font-heading text-5xl font-light tracking-wide">Frequently Asked Questions</h1>
+          <p className="mt-5 font-body text-base text-foreground/60">Everything you need to know about our candles</p>
         </div>
 
         <Accordion type="single" collapsible className="space-y-4">
@@ -69,7 +69,7 @@ export default function FaqPage() {
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium">
                     {index + 1}
                   </span>
-                  <span className="pt-1 font-medium">{faq.question}</span>
+                  <span className="pt-1 font-body font-medium">{faq.question}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pl-12 text-foreground/70">{faq.answer}</AccordionContent>

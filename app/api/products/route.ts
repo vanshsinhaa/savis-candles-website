@@ -7,7 +7,10 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category')
     const featured = searchParams.get('featured')
 
-    let query = supabase.from('products').select('*')
+    // cost_price is excluded — private business info, never sent to the public
+    let query = supabase.from('products').select(
+      'id, name, sku, category, weight, selling_price, price, profit, stock_quantity, reorder_level, supplier_name, is_featured, is_active, created_at, image, description, burn_time, scent, size, notes, last_restock_date'
+    )
 
     if (category) {
       query = query.eq('category', category)
@@ -24,7 +27,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 })
     }
 
-    return NextResponse.json({ products })
+    return NextResponse.json({
+      products: products?.map(p => ({ ...p, sold_out: p.stock_quantity === 0 })),
+    })
   } catch (error) {
     console.error('Error in products API:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

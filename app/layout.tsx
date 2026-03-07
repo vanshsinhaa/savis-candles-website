@@ -1,15 +1,22 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Space_Grotesk } from "next/font/google"
+import { Playfair_Display, Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { Providers } from "@/components/providers"
+import { EmberChat } from "@/components/ember-chat"
 import { Suspense } from "react"
 
-const spaceGrotesk = Space_Grotesk({
+const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-space-grotesk",
+  variable: "--font-heading",
+  display: "swap",
+})
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-body",
   display: "swap",
 })
 
@@ -26,11 +33,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${spaceGrotesk.variable} font-sans antialiased`}>
+      <body className={`${playfairDisplay.variable} ${inter.variable} font-body antialiased`}>
         <Providers>
           <Suspense fallback={<div>Loading...</div>}>
             <Navbar />
             {children}
+            <EmberChat />
             <Analytics />
           </Suspense>
         </Providers>
