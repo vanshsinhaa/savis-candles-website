@@ -1,3 +1,9 @@
+// ⚠️ DEPRECATED - This file is no longer used in the application
+// Products are now fetched from Supabase database via /api/products
+// This file is kept as a backup reference only
+// Last used: February 2026
+// See lib/supabase.ts for the current Product interface
+
 export interface Product {
   id: string
   name: string
