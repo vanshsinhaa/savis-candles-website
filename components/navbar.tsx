@@ -19,6 +19,7 @@ const navLinks = [
 
 export function Navbar() {
   const pathname = usePathname()
+  if (pathname.startsWith('/admin')) return null
   const { state } = useCart()
   const [isClient, setIsClient] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)

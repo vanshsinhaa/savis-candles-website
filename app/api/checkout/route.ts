@@ -2,19 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { supabase } from '@/lib/supabase'
 import { formatAmountForStripe } from '@/lib/stripe'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
     // Check if Stripe is configured
     if (!process.env.STRIPE_SECRET_KEY) {
-      return NextResponse.json({ 
-        error: 'Payment system not configured. Please set up Stripe keys.' 
+      return NextResponse.json({
+        error: 'Payment system not configured. Please set up Stripe keys.'
       }, { status: 503 })
     }
 
-    const session = await getServerSession(authOptions)
     const body = await request.json()
     const { items, customerEmail, customerName, shippingAddress } = body
 
