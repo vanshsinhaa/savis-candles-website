@@ -503,7 +503,7 @@ export function EmberChat() {
             aria-label="Send message"
             className="flex-shrink-0 w-9 h-9 rounded-full bg-foreground text-background flex items-center justify-center transition-opacity disabled:opacity-30 hover:opacity-80 active:scale-95"
           >
-            <svg className="w-4 h-4 rotate-90" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path d="M2 21L23 12 2 3v7l15 2-15 2z" />
             </svg>
           </button>
@@ -519,6 +519,9 @@ export function EmberChat() {
           "flex items-center justify-center select-none",
           "transition-transform duration-200 hover:scale-110 active:scale-95",
           !isOpen && "animate-ember-pulse",
+          // On mobile the panel is full-screen and has its own close button in the header
+          // Hide the floating bubble when open on mobile to avoid overlapping the send button
+          isOpen && "max-md:hidden",
         )}
         aria-label={isOpen ? "Close Ember chat" : "Open Ember chat"}
       >
