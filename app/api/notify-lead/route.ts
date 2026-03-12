@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(request: NextRequest) {
   // Silently skip if not configured — notification is non-critical
   if (!process.env.RESEND_API_KEY || !process.env.STORE_OWNER_EMAIL) {
     return NextResponse.json({ ok: true, skipped: true })
   }
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
 
   try {
     const body = await request.json()
