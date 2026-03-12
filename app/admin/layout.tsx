@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Package, ShoppingBag, BarChart2, Users, LogOut } from 'lucide-react'
+import { Package, ShoppingBag, BarChart2, Users, LogOut, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -48,7 +48,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ))}
         </nav>
 
-        <div className="px-2 py-4 border-t border-gray-100">
+        <div className="px-2 py-4 border-t border-gray-100 space-y-0.5">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-800 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4 shrink-0" />
+            View Site
+          </Link>
           <button
             onClick={handleLogout}
             className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-sm text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors"

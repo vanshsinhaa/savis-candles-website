@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { formatAmountForStripe } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     // ── Stock validation — check BEFORE creating the order ───────────────────
     const requestedNames = items.map((item: any) => item.name)
-    const { data: stockData, error: stockError } = await supabase
+    const { data: stockData, error: stockError } = await supabaseAdmin
       .from('products')
       .select('name, stock_quantity')
       .in('name', requestedNames)
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     }, 0)
 
     // Create order in database first
-        const { data: order, error: orderError } = await supabase
+        const { data: order, error: orderError } = await supabaseAdmin
           .from('orders')
           .insert({
             customer_email: customerEmail,
@@ -82,14 +82,14 @@ export async function POST(request: NextRequest) {
 
     // Get product UUIDs from database based on names
     const productNames = items.map((item: any) => item.name)
-    const { data: products, error: productsError } = await supabase
+    const { data: products, error: productsError } = await supabaseAdmin
       .from('products')
       .select('id, name')
       .in('name', productNames)
 
     if (productsError) {
       console.error('Error fetching products:', productsError)
-      await supabase.from('orders').delete().eq('id', order.id)
+      await supabaseAdmin.from('orders').delete().eq('id', order.id)
       return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 })
     }
 
@@ -105,18 +105,18 @@ export async function POST(request: NextRequest) {
     }).filter(item => item.product_id) // Remove items where product wasn't found
 
     if (orderItems.length === 0) {
-      await supabase.from('orders').delete().eq('id', order.id)
+      await supabaseAdmin.from('orders').delete().eq('id', order.id)
       return NextResponse.json({ error: 'No valid products found' }, { status: 400 })
     }
 
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await supabaseAdmin
       .from('order_items')
       .insert(orderItems)
 
     if (itemsError) {
       console.error('Error creating order items:', itemsError)
       // Clean up the order if items creation fails
-      await supabase.from('orders').delete().eq('id', order.id)
+      await supabaseAdmin.from('orders').delete().eq('id', order.id)
       return NextResponse.json({ error: 'Failed to create order items' }, { status: 500 })
     }
 
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
           currency: 'usd',
           product_data: {
             name: item.name,
-            description: item.description,
+            ...(item.description ? { description: item.description } : {}),
             // Temporarily skip images to get checkout working
             // images: [item.image.startsWith('http') ? item.image : `${request.nextUrl.origin}${item.image}`],
           },
@@ -153,8 +153,8 @@ export async function POST(request: NextRequest) {
       url: stripeSession.url,
       orderId: order.id 
     })
-  } catch (error) {
-    console.error('Error in checkout API:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (error: any) {
+    console.error('Error in checkout API:', error?.message ?? error)
+    return NextResponse.json({ error: error?.message ?? 'Internal server error' }, { status: 500 })
   }
 }

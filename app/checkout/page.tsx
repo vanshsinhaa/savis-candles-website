@@ -245,7 +245,7 @@ export default function CheckoutPage() {
 
             <div className="border-t pt-6">
               <div className="flex justify-between text-lg font-medium">
-                <span>Total ({state.itemCount} items)</span>
+                <span>Total ({state.items.length} {state.items.length === 1 ? 'item' : 'items'})</span>
                 <span>${state.total.toFixed(2)}</span>
               </div>
             </div>

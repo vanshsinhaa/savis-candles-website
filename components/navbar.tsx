@@ -40,9 +40,9 @@ export function Navbar() {
       aria-label="Open cart"
     >
       <ShoppingCart className="w-5 h-5" />
-      {isClient && state.itemCount > 0 && (
+      {isClient && state.items.length > 0 && (
         <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-body">
-          {state.itemCount}
+          {state.items.length}
         </span>
       )}
     </button>
