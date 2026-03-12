@@ -81,6 +81,11 @@ export function Navbar() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href="/admin/login" className="text-xs text-foreground/30 hover:text-foreground/60 transition-colors">
+                  Admin
+                </Link>
+              </li>
               <li><AuthButton /></li>
               <li><CartButton /></li>
             </ul>

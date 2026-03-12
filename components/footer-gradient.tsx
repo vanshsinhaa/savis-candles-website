@@ -113,7 +113,6 @@ export function FooterGradient() {
                 <a href="#" className="text-white/60 hover:text-white transition-colors">Privacy Policy</a>
                 <a href="#" className="text-white/60 hover:text-white transition-colors">Terms of Service</a>
                 <a href="#" className="text-white/60 hover:text-white transition-colors">Cookie Policy</a>
-                <a href="/admin/login" className="text-white/50 hover:text-white/80 transition-colors text-xs">Admin</a>
               </div>
             </div>
           </div>
