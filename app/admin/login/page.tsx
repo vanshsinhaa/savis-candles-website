@@ -23,7 +23,7 @@ export default function AdminLoginPage() {
       const data = await res.json()
 
       if (res.ok) {
-        router.push('/admin/products')
+        window.location.href = '/admin/products'
       } else {
         setError(data.error || 'An error occurred')
       }
