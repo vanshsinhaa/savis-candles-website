@@ -64,8 +64,8 @@ export default function CheckoutPage() {
   if (state.items.length === 0) {
     return (
       <div className="min-h-screen bg-background py-24">
-        <div className="container mx-auto px-6 text-center">
-          <h1 className="font-heading text-4xl font-light tracking-wide mb-8">Your Cart is Empty</h1>
+        <div className="container mx-auto px-4 sm:px-6 text-center">
+          <h1 className="font-heading text-2xl sm:text-4xl font-light tracking-wide mb-8">Your Cart is Empty</h1>
           <p className="font-body text-lg text-muted-foreground mb-8">
             Discover our beautiful collection of handcrafted candles
           </p>
@@ -78,14 +78,14 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-24">
-      <div className="container mx-auto px-6 max-w-4xl">
-        <h1 className="font-heading text-4xl font-light tracking-wide mb-16 text-center">Checkout</h1>
+    <div className="min-h-screen bg-background py-20 sm:py-24">
+      <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
+        <h1 className="font-heading text-2xl sm:text-4xl font-light tracking-wide mb-8 sm:mb-16 text-center">Checkout</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Customer Information */}
           <div className="space-y-6">
-            <h2 className="font-heading text-2xl font-normal">Customer Information</h2>
+            <h2 className="font-heading text-xl sm:text-2xl font-normal">Customer Information</h2>
             
             <div className="space-y-4">
               <div>
@@ -186,7 +186,7 @@ export default function CheckoutPage() {
           {/* Order Summary */}
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="font-heading text-2xl font-normal">Order Summary</h2>
+              <h2 className="font-heading text-xl sm:text-2xl font-normal">Order Summary</h2>
               <Button variant="outline" size="sm" onClick={clearCart}>
                 Clear Cart
               </Button>

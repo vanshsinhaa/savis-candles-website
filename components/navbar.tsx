@@ -116,6 +116,15 @@ export function Navbar() {
                   </li>
                 ))}
                 <li className="px-4 py-2"><AuthButton /></li>
+                <li className="px-4 pt-2 pb-1 border-t border-border/20">
+                  <Link
+                    href="/admin/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-xs text-foreground/30 hover:text-foreground/60 transition-colors"
+                  >
+                    Admin
+                  </Link>
+                </li>
               </ul>
             </div>
           )}

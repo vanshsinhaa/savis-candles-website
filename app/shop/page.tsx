@@ -48,7 +48,7 @@ export default function ShopPage() {
       <main className="bg-background pt-24">
         <div className="container mx-auto px-6 pt-16 pb-24">
           <div className="mb-16 text-center">
-            <h1 className="font-heading text-5xl font-light tracking-wide">Shop All Candles</h1>
+            <h1 className="font-heading text-3xl sm:text-5xl font-light tracking-wide">Shop All Candles</h1>
             <p className="mt-5 font-body text-base text-foreground/60">
               Discover our complete collection of handcrafted luxury candles
             </p>
@@ -74,7 +74,7 @@ export default function ShopPage() {
       <main className="bg-background pt-24">
         <div className="container mx-auto px-6 pt-16 pb-24">
           <div className="text-center">
-            <h1 className="font-heading text-5xl font-light tracking-wide mb-8">Shop All Candles</h1>
+            <h1 className="font-heading text-3xl sm:text-5xl font-light tracking-wide mb-8">Shop All Candles</h1>
             <div className="max-w-md mx-auto">
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 mb-6">
                 <p className="font-body text-destructive">{error}</p>
@@ -96,7 +96,7 @@ export default function ShopPage() {
     return (
       <main className="bg-background pt-24">
         <div className="container mx-auto px-6 pt-16 pb-24 text-center">
-          <h1 className="font-heading text-5xl font-light tracking-wide mb-8">Shop All Candles</h1>
+          <h1 className="font-heading text-3xl sm:text-5xl font-light tracking-wide mb-8">Shop All Candles</h1>
           <p className="font-body text-lg text-foreground/60">No products available at the moment.</p>
         </div>
       </main>
@@ -108,7 +108,7 @@ export default function ShopPage() {
       <main className="bg-background pt-24">
         <div ref={gridRef} className="container mx-auto px-6 pt-16 pb-24">
           <div className="reveal-heading mb-16 text-center">
-            <h1 className="font-heading text-5xl font-light tracking-wide">Shop All Candles</h1>
+            <h1 className="font-heading text-3xl sm:text-5xl font-light tracking-wide">Shop All Candles</h1>
             <p className="mt-5 font-body text-base text-foreground/60">
               Discover our complete collection of handcrafted luxury candles
             </p>

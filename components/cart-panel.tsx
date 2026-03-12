@@ -183,7 +183,7 @@ export function CartPanel({ open, onClose }: CartPanelProps) {
           <div className="border-t border-border px-6 py-6 space-y-4">
             <div className="flex items-center justify-between">
               <span className="font-body text-sm text-foreground/60">
-                Subtotal ({state.itemCount} {state.itemCount === 1 ? "item" : "items"})
+                Subtotal ({state.items.length} {state.items.length === 1 ? "item" : "items"})
               </span>
               <span className="font-body text-base font-medium">
                 ${state.total.toFixed(2)}
