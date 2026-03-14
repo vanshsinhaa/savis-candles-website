@@ -53,12 +53,11 @@ export function TestimonialsSection() {
   useScrollReveal(sectionRef)
 
   return (
-    <section ref={sectionRef} className="relative bg-background py-24">
-      <div className="container mx-auto max-w-7xl px-6">
-        {/* Heading block revealed as one unit, 15px rise */}
-        <div className="reveal-heading mb-16 text-center">
-          <h2 className="mb-4 font-heading text-4xl font-light tracking-wide">What Our Customers Say</h2>
-          <p className="text-lg text-muted-foreground">
+    <section ref={sectionRef} className="relative bg-background py-16 sm:py-24">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="reveal-heading mb-10 sm:mb-16 text-center">
+          <h2 className="mb-4 font-heading text-3xl sm:text-4xl font-light tracking-wide">What Our Customers Say</h2>
+          <p className="text-base sm:text-lg text-muted-foreground">
             Join thousands of satisfied customers who've made savis candles a part of their daily ritual.
           </p>
         </div>
@@ -95,7 +94,7 @@ export function TestimonialsSection() {
           ))}
         </div>
 
-        <div className="mt-16 text-center">
+        <div className="mt-10 sm:mt-16 text-center">
           <div className="inline-flex items-center space-x-2 rounded-full bg-muted px-6 py-3">
             <div className="flex items-center space-x-1">
               {[...Array(5)].map((_, i) => (

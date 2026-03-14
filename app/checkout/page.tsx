@@ -192,10 +192,10 @@ export default function CheckoutPage() {
               </Button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {state.items.map((item) => (
-                <div key={item.id} className="flex items-center space-x-4 p-4 border border-border rounded-lg">
-                  <div className="relative w-16 h-16 flex-shrink-0">
+                <div key={item.id} className="flex gap-3 p-3 border border-border rounded-lg">
+                  <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0">
                     <Image
                       src={item.image}
                       alt={item.name}
@@ -204,41 +204,42 @@ export default function CheckoutPage() {
                     />
                   </div>
                   
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium truncate">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground">${item.price}</p>
+                  <div className="flex-1 min-w-0 flex flex-col gap-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-medium text-sm leading-tight truncate">{item.name}</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeItem(item.id)}
+                        className="text-destructive hover:text-destructive -mt-1 -mr-1 h-7 w-7 p-0 shrink-0"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">${item.price}</p>
+                    <div className="flex items-center justify-between mt-auto">
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          className="h-6 w-6 p-0"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </Button>
+                        <span className="w-6 text-center text-sm">{item.quantity}</span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="h-6 w-6 p-0"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      <p className="font-medium text-sm">${(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
                   </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    >
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                    <span className="w-8 text-center">{item.quantity}</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeItem(item.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
                 </div>
               ))}
             </div>

@@ -27,9 +27,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 })
     }
 
-    return NextResponse.json({
-      products: products?.map(p => ({ ...p, sold_out: p.stock_quantity === 0 })),
-    })
+    return NextResponse.json(
+      { products: products?.map(p => ({ ...p, sold_out: p.stock_quantity === 0 })) },
+      { headers: { 'Cache-Control': 'no-store, max-age=0' } }
+    )
   } catch (error) {
     console.error('Error in products API:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

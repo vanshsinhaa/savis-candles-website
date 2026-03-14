@@ -32,12 +32,12 @@ export function NewsletterSection() {
   }, [])
 
   return (
-    <section ref={sectionRef} className="relative bg-background py-24">
-      <div className="container mx-auto max-w-4xl px-6">
-        <div className="newsletter-item rounded-2xl bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 p-12 text-center shadow-sm">
-          <div className="mb-8">
-            <h2 className="mb-4 font-heading text-4xl font-light tracking-wide">Stay in the Glow</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+    <section ref={sectionRef} className="relative bg-background py-16 sm:py-24">
+      <div className="container mx-auto max-w-4xl px-4 sm:px-6">
+        <div className="newsletter-item rounded-2xl bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 p-6 sm:p-12 text-center shadow-sm">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="mb-4 font-heading text-3xl sm:text-4xl font-light tracking-wide">Stay in the Glow</h2>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
               Be the first to know about new fragrances, exclusive offers, and behind-the-scenes 
               glimpses into our candle-making process.
             </p>

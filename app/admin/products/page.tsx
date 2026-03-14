@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
-import { Plus, Upload, Loader2, Trash2, Package } from 'lucide-react'
+import { Plus, Upload, Loader2, Trash2, Package, ArrowLeft } from 'lucide-react'
 
 interface Product {
   id: string
@@ -47,6 +47,29 @@ const EMPTY_FORM: Omit<Product, 'id'> = {
   notes: '',
 }
 
+function productToForm(p: Product): Omit<Product, 'id'> {
+  return {
+    name: p.name,
+    sku: p.sku || '',
+    category: p.category || 'Jar',
+    description: p.description || '',
+    weight: p.weight || '',
+    selling_price: p.selling_price,
+    cost_price: p.cost_price,
+    price: p.price,
+    stock_quantity: p.stock_quantity,
+    reorder_level: p.reorder_level,
+    supplier_name: p.supplier_name || '',
+    scent: p.scent || '',
+    burn_time: p.burn_time || '',
+    is_active: p.is_active,
+    is_featured: p.is_featured,
+    image: p.image,
+    image_url: p.image_url,
+    notes: p.notes || '',
+  }
+}
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -60,17 +83,26 @@ export default function AdminProductsPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+  // Mobile: track if the edit panel is visible
+  const [showEditPanel, setShowEditPanel] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (): Promise<Product[]> => {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/products')
       const data = await res.json()
-      if (res.ok) setProducts(data.products || [])
-      else toast.error('Failed to load products')
+      if (res.ok) {
+        const list: Product[] = data.products || []
+        setProducts(list)
+        return list
+      } else {
+        toast.error('Failed to load products')
+        return []
+      }
     } catch {
       toast.error('Network error loading products')
+      return []
     } finally {
       setLoading(false)
     }
@@ -81,29 +113,11 @@ export default function AdminProductsPage() {
   function selectProduct(p: Product) {
     setSelected(p)
     setIsNew(false)
-    setForm({
-      name: p.name,
-      sku: p.sku || '',
-      category: p.category || 'Jar',
-      description: p.description || '',
-      weight: p.weight || '',
-      selling_price: p.selling_price,
-      cost_price: p.cost_price,
-      price: p.price,
-      stock_quantity: p.stock_quantity,
-      reorder_level: p.reorder_level,
-      supplier_name: p.supplier_name || '',
-      scent: p.scent || '',
-      burn_time: p.burn_time || '',
-      is_active: p.is_active,
-      is_featured: p.is_featured,
-      image: p.image,
-      image_url: p.image_url,
-      notes: p.notes || '',
-    })
+    setForm(productToForm(p))
     setImageFile(null)
     setImagePreview(null)
     setShowDeleteConfirm(false)
+    setShowEditPanel(true)
   }
 
   function startNew() {
@@ -113,6 +127,11 @@ export default function AdminProductsPage() {
     setImageFile(null)
     setImagePreview(null)
     setShowDeleteConfirm(false)
+    setShowEditPanel(true)
+  }
+
+  function handleBackToList() {
+    setShowEditPanel(false)
   }
 
   function handleImageSelect(file: File) {
@@ -136,10 +155,8 @@ export default function AdminProductsPage() {
       fd.append('file', imageFile)
       fd.append('sku', form.sku || productId)
 
-      // Pass old image path for deletion
       const currentImage = selected?.image || selected?.image_url
       if (currentImage) {
-        // Extract path from URL if it's a full URL
         const match = currentImage.match(/product-images\/(.+)$/)
         if (match) fd.append('oldPath', match[1])
       }
@@ -163,14 +180,16 @@ export default function AdminProductsPage() {
     }
     setSaving(true)
     try {
+      // Build the DB payload — strip image_url since it is not a real DB column
+      const { image_url: _omit, ...formWithoutImageUrl } = form
       const payload: any = {
-        ...form,
+        ...formWithoutImageUrl,
         selling_price: form.selling_price,
         price: form.selling_price ?? form.price,
       }
 
       if (isNew) {
-        // Create first to get an ID, then upload image
+        // 1. Create the product record
         const res = await fetch('/api/admin/products', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -179,29 +198,47 @@ export default function AdminProductsPage() {
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Create failed')
 
-        const newProduct = data.product
-        // Upload image if selected
+        let createdProduct: Product = data.product
+
+        // 2. Upload image if selected, then patch the new product
         if (imageFile) {
-          const imageUrl = await uploadImage(newProduct.id)
+          const imageUrl = await uploadImage(createdProduct.id)
           if (imageUrl) {
-            await fetch(`/api/admin/products/${newProduct.id}`, {
+            const patchRes = await fetch(`/api/admin/products/${createdProduct.id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ image: imageUrl, image_url: imageUrl }),
+              body: JSON.stringify({ image: imageUrl }),
             })
-          }
-        }
-        toast.success('Product created')
-      } else if (selected) {
-        // Upload image first if changed
-        if (imageFile) {
-          const imageUrl = await uploadImage(selected.id)
-          if (imageUrl) {
-            payload.image = imageUrl
-            payload.image_url = imageUrl
+            const patchData = await patchRes.json()
+            // Merge the new image into our local copy regardless of server echo
+            createdProduct = {
+              ...createdProduct,
+              ...(patchRes.ok && patchData.product ? patchData.product : {}),
+              image: imageUrl,
+              image_url: imageUrl,
+            }
           }
         }
 
+        toast.success('Product created')
+        setProducts(prev => [createdProduct, ...prev])
+        setIsNew(false)
+        setImageFile(null)
+        setImagePreview(null)
+        setSelected(createdProduct)
+        setForm(productToForm(createdProduct))
+      } else if (selected) {
+        // 1. Upload image first if a new file was chosen
+        let newImageUrl: string | null = null
+        if (imageFile) {
+          newImageUrl = await uploadImage(selected.id)
+          if (newImageUrl) {
+            // Only set `image` — image_url is not a real DB column
+            payload.image = newImageUrl
+          }
+        }
+
+        // 2. Save all form changes to the DB
         const res = await fetch(`/api/admin/products/${selected.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -209,13 +246,43 @@ export default function AdminProductsPage() {
         })
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Update failed')
+
+        // 3. Build the definitive updated product:
+        //    overlay known-good local values on top of the server echo so the UI
+        //    always reflects exactly what was just saved (guards against stale echoes).
+        const serverProduct: Product = data.product
+        const updatedProduct: Product = {
+          ...serverProduct,
+          name: form.name,
+          sku: form.sku,
+          category: form.category,
+          description: form.description,
+          weight: form.weight,
+          selling_price: form.selling_price,
+          cost_price: form.cost_price,
+          price: form.selling_price ?? form.price,
+          stock_quantity: form.stock_quantity,
+          reorder_level: form.reorder_level,
+          supplier_name: form.supplier_name,
+          scent: form.scent,
+          burn_time: form.burn_time,
+          is_active: form.is_active,
+          is_featured: form.is_featured,
+          notes: form.notes,
+          // image_url is not a real DB column — derive it purely from what we uploaded
+          image: newImageUrl ?? serverProduct.image ?? form.image,
+          image_url: newImageUrl ?? form.image_url,
+        }
+
+        // 4. Update all three pieces of UI state at once
+        setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p))
+        setSelected(updatedProduct)
+        setForm(productToForm(updatedProduct))
+        setIsNew(false)
+        setImageFile(null)
+        setImagePreview(null)
         toast.success('Changes saved')
       }
-
-      await fetchProducts()
-      setIsNew(false)
-      setImageFile(null)
-      setImagePreview(null)
     } catch (err: any) {
       toast.error(err.message || 'Save failed')
     } finally {
@@ -230,12 +297,16 @@ export default function AdminProductsPage() {
       const res = await fetch(`/api/admin/products/${selected.id}`, { method: 'DELETE' })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Delete failed')
+
+      // Replace the product in-list with the deactivated version returned by the API
+      const deactivated: Product = data.product
+      setProducts(prev => prev.map(p => p.id === deactivated.id ? deactivated : p))
       toast.success('Product deactivated')
       setSelected(null)
       setIsNew(false)
       setForm(EMPTY_FORM)
       setShowDeleteConfirm(false)
-      await fetchProducts()
+      setShowEditPanel(false)
     } catch (err: any) {
       toast.error(err.message || 'Delete failed')
     } finally {
@@ -249,7 +320,7 @@ export default function AdminProductsPage() {
   return (
     <div className="flex h-full min-h-screen">
       {/* Left panel — product list */}
-      <div className="w-72 shrink-0 border-r border-gray-200 bg-white flex flex-col">
+      <div className={`w-full md:w-72 shrink-0 border-r border-gray-200 bg-white flex flex-col ${showEditPanel ? 'hidden md:flex' : 'flex'}`}>
         <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
           <h1 className="text-sm font-semibold text-gray-800">Products</h1>
           <button
@@ -288,7 +359,7 @@ export default function AdminProductsPage() {
                     <Package className="w-4 h-4 text-gray-300" />
                   </div>
                 )}
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className={`text-sm truncate ${p.is_active ? 'text-gray-900' : 'text-gray-400'}`}>
                     {p.name}
                   </p>
@@ -307,22 +378,31 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
-      {/* Right panel — edit form */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Right panel — edit form (inlined to avoid remount-on-render focus loss) */}
+      <div className={`flex-1 min-w-0 overflow-y-auto ${showEditPanel ? 'flex flex-col' : 'hidden md:flex md:flex-col'}`}>
         {!selected && !isNew ? (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            <div className="text-center">
+          <div className="flex items-center justify-center h-full min-h-[400px] text-gray-400">
+            <div className="text-center px-4">
               <Package className="w-10 h-10 mx-auto mb-3 opacity-30" />
               <p className="text-sm">Select a product or create a new one</p>
             </div>
           </div>
         ) : (
-          <div className="max-w-2xl mx-auto p-6 space-y-6">
+          <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-gray-900">
-                {isNew ? 'New Product' : 'Edit Product'}
-              </h2>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleBackToList}
+                  className="md:hidden flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back
+                </button>
+                <h2 className="text-base font-semibold text-gray-900">
+                  {isNew ? 'New Product' : 'Edit Product'}
+                </h2>
+              </div>
               <div className="flex items-center gap-2">
                 {form.is_active ? (
                   <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Active</span>
@@ -350,9 +430,9 @@ export default function AdminProductsPage() {
               >
                 {currentImage ? (
                   <div className="flex items-center gap-4">
-                    <img src={currentImage} alt="Product" className="w-20 h-20 rounded object-cover bg-gray-100" />
-                    <div className="flex-1">
-                      <p className="text-xs text-gray-600 mb-2">
+                    <img src={currentImage} alt="Product" className="w-20 h-20 rounded object-cover bg-gray-100 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-gray-600 mb-2 truncate">
                         {imageFile ? imageFile.name : 'Current image'}
                       </p>
                       <div className="flex gap-2">
@@ -398,8 +478,8 @@ export default function AdminProductsPage() {
             {/* BASIC INFO */}
             <section className="space-y-3">
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide">Basic Info</label>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
                   <label className="block text-xs text-gray-600 mb-1">Product Name *</label>
                   <input
                     type="text"
@@ -432,7 +512,7 @@ export default function AdminProductsPage() {
                     <option>Other</option>
                   </select>
                 </div>
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <label className="block text-xs text-gray-600 mb-1">Description</label>
                   <textarea
                     value={form.description || ''}
@@ -458,7 +538,7 @@ export default function AdminProductsPage() {
             {/* PRICING */}
             <section className="space-y-3">
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide">Pricing</label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">Selling Price ($)</label>
                   <input
@@ -495,7 +575,7 @@ export default function AdminProductsPage() {
             {/* INVENTORY */}
             <section className="space-y-3">
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide">Inventory</label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">Stock Qty</label>
                   <input
@@ -532,8 +612,8 @@ export default function AdminProductsPage() {
             {/* SCENT INFO */}
             <section className="space-y-3">
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide">Scent Info</label>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
                   <label className="block text-xs text-gray-600 mb-1">Scent Notes</label>
                   <input
                     type="text"
@@ -569,7 +649,7 @@ export default function AdminProductsPage() {
             {/* VISIBILITY */}
             <section className="space-y-3">
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide">Visibility</label>
-              <div className="flex gap-6">
+              <div className="flex flex-wrap gap-4 sm:gap-6">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <button
                     type="button"

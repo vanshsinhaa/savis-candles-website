@@ -55,10 +55,10 @@ const faqs = [
 export default function FaqPage() {
   return (
     <main className="bg-background">
-      <div className="container mx-auto max-w-3xl px-6 pt-32 pb-24">
-        <div className="mb-20 text-center">
-          <h1 className="font-heading text-5xl font-light tracking-wide">Frequently Asked Questions</h1>
-          <p className="mt-5 font-body text-base text-foreground/60">Everything you need to know about our candles</p>
+      <div className="container mx-auto max-w-3xl px-4 sm:px-6 pt-24 sm:pt-32 pb-16 sm:pb-24">
+        <div className="mb-12 sm:mb-20 text-center">
+          <h1 className="font-heading text-3xl sm:text-5xl font-light tracking-wide">Frequently Asked Questions</h1>
+          <p className="mt-4 sm:mt-5 font-body text-base text-foreground/60">Everything you need to know about our candles</p>
         </div>
 
         <Accordion type="single" collapsible className="space-y-4">

@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils"
 import { useCart } from "@/hooks/use-cart"
 import { AuthButton } from "@/components/auth-button"
 import { CartPanel } from "@/components/cart-panel"
-import { ShoppingCart, Menu, X } from "lucide-react"
-import { useEffect, useState } from "react"
+import { ShoppingCart, Menu, X, Settings } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 
 const navLinks = [
@@ -24,11 +24,30 @@ export function Navbar() {
   const [isClient, setIsClient] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false)
+  const adminMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { setIsClient(true) }, [])
 
   // Close cart when navigating
-  useEffect(() => { setIsCartOpen(false) }, [pathname])
+  useEffect(() => {
+    setIsCartOpen(false)
+    setIsMobileMenuOpen(false)
+    setIsAdminMenuOpen(false)
+  }, [pathname])
+
+  // Close admin dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (adminMenuRef.current && !adminMenuRef.current.contains(e.target as Node)) {
+        setIsAdminMenuOpen(false)
+      }
+    }
+    if (isAdminMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [isAdminMenuOpen])
 
   const CartButton = ({ className }: { className?: string }) => (
     <button
@@ -81,13 +100,30 @@ export function Navbar() {
                   </Link>
                 </li>
               ))}
-              <li>
-                <Link href="/admin/login" className="text-xs text-foreground/30 hover:text-foreground/60 transition-colors">
-                  Admin
-                </Link>
-              </li>
               <li><AuthButton /></li>
               <li><CartButton /></li>
+              {/* Discreet admin hamburger — desktop only */}
+              <li ref={adminMenuRef} className="relative">
+                <button
+                  onClick={() => setIsAdminMenuOpen(!isAdminMenuOpen)}
+                  className="flex items-center justify-center w-8 h-8 text-foreground/30 hover:text-foreground/60 transition-colors"
+                  aria-label="More options"
+                >
+                  <Menu className="w-4 h-4" />
+                </button>
+                {isAdminMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-40 bg-background/95 backdrop-blur-sm border border-border/30 rounded-lg shadow-lg py-1 z-50">
+                    <Link
+                      href="/admin/login"
+                      onClick={() => setIsAdminMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground/60 hover:text-foreground hover:bg-secondary/50 transition-colors"
+                    >
+                      <Settings className="w-3.5 h-3.5" />
+                      Admin
+                    </Link>
+                  </div>
+                )}
+              </li>
             </ul>
 
             {/* Mobile: cart + hamburger */}
@@ -96,6 +132,7 @@ export function Navbar() {
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="flex items-center justify-center w-8 h-8 text-foreground/60 hover:text-foreground transition-colors"
+                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               >
                 {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -105,28 +142,33 @@ export function Navbar() {
           {/* Mobile menu */}
           {isMobileMenuOpen && (
             <div className="md:hidden mt-4 py-4 border-t border-border/20 bg-background/95 backdrop-blur-sm rounded-lg">
-              <ul className="flex flex-col space-y-4">
+              <ul className="flex flex-col space-y-1">
                 {navLinks.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={cn(
-                        "block px-4 py-2 text-sm font-medium tracking-wide transition-colors",
-                        pathname === link.href ? "text-foreground" : "text-foreground/60 hover:text-foreground",
+                        "block px-4 py-2.5 text-sm font-medium tracking-wide transition-colors rounded-md mx-2",
+                        pathname === link.href
+                          ? "text-foreground bg-secondary/50"
+                          : "text-foreground/60 hover:text-foreground hover:bg-secondary/30",
                       )}
                     >
                       {link.label}
                     </Link>
                   </li>
                 ))}
-                <li className="px-4 py-2"><AuthButton /></li>
-                <li className="px-4 pt-2 pb-1 border-t border-border/20">
+                <li className="px-4 py-2 mt-1">
+                  <AuthButton />
+                </li>
+                <li className="mx-2 border-t border-border/20 pt-2 mt-1">
                   <Link
                     href="/admin/login"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-xs text-foreground/30 hover:text-foreground/60 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2.5 text-xs text-foreground/40 hover:text-foreground/70 transition-colors rounded-md"
                   >
+                    <Settings className="w-3 h-3" />
                     Admin
                   </Link>
                 </li>

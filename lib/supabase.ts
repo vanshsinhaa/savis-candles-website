@@ -60,7 +60,7 @@ export function toProductDisplay(product: Product): ProductDisplay {
     id: product.id,
     name: product.name,
     sku: product.sku,
-    price: product.price,
+    price: product.selling_price ?? product.price,
     sellingPrice: product.selling_price,
     image: product.image,
     description: product.description,

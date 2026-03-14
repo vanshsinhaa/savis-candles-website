@@ -8,13 +8,13 @@ export function AboutSection() {
   useScrollReveal(sectionRef)
 
   return (
-    <section ref={sectionRef} className="relative bg-background py-24">
-      <div className="container mx-auto max-w-6xl px-6">
-        <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-20">
+    <section ref={sectionRef} className="relative bg-background py-16 sm:py-24">
+      <div className="container mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="grid grid-cols-1 gap-10 sm:gap-16 lg:grid-cols-2 lg:gap-20">
           {/* Left side - Story */}
           <div className="reveal space-y-8">
             <div className="space-y-4">
-              <h2 className="font-heading text-4xl font-light tracking-wide">Our Story</h2>
+              <h2 className="font-heading text-3xl sm:text-4xl font-light tracking-wide">Our Story</h2>
               <p className="text-lg text-muted-foreground">
                 Born from a passion for creating moments of tranquility and warmth.
               </p>
@@ -40,18 +40,18 @@ export function AboutSection() {
               </p>
             </div>
 
-            <div className="flex items-center space-x-8 pt-4">
+            <div className="grid grid-cols-3 gap-4 pt-4">
               <div className="text-center">
-                <div className="text-3xl font-light text-primary">100%</div>
-                <div className="text-sm text-muted-foreground">Natural Soy Wax</div>
+                <div className="text-2xl sm:text-3xl font-light text-primary">100%</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Natural Soy Wax</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-light text-primary">50+</div>
-                <div className="text-sm text-muted-foreground">Hours Burn Time</div>
+                <div className="text-2xl sm:text-3xl font-light text-primary">50+</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Hours Burn Time</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-light text-primary">1000+</div>
-                <div className="text-sm text-muted-foreground">Happy Customers</div>
+                <div className="text-2xl sm:text-3xl font-light text-primary">1000+</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Happy Customers</div>
               </div>
             </div>
           </div>
