@@ -50,12 +50,13 @@ export default function CheckoutPage() {
         // Redirect to Stripe checkout
         window.location.href = data.url
       } else {
-        console.error('Checkout error:', data.error)
-        alert('Checkout failed. Please try again.')
+        const message = data?.error || 'Something went wrong. Please try again.'
+        console.error('Checkout error:', message)
+        alert(message)
       }
     } catch (error) {
       console.error('Checkout error:', error)
-      alert('Checkout failed. Please try again.')
+      alert('Network error. Please check your connection and try again.')
     } finally {
       setIsProcessing(false)
     }

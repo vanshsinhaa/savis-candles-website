@@ -20,11 +20,12 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Stock validation — check BEFORE creating the order ───────────────────
-    const requestedNames = items.map((item: any) => item.name)
+    // Use product IDs (not names) so renamed products still validate correctly
+    const requestedIds = items.map((item: any) => item.id)
     const { data: stockData, error: stockError } = await supabaseAdmin
       .from('products')
-      .select('name, stock_quantity')
-      .in('name', requestedNames)
+      .select('id, name, stock_quantity')
+      .in('id', requestedIds)
 
     if (stockError) {
       console.error('Error checking product stock:', stockError)
@@ -32,8 +33,9 @@ export async function POST(request: NextRequest) {
     }
 
     for (const item of items) {
-      const product = stockData?.find((p: any) => p.name === item.name)
+      const product = stockData?.find((p: any) => p.id === item.id)
       if (!product) {
+        console.error('Product not found during stock check:', item.id, item.name)
         return NextResponse.json(
           { error: `"${item.name}" is no longer available` },
           { status: 400 }
@@ -41,13 +43,13 @@ export async function POST(request: NextRequest) {
       }
       if (product.stock_quantity === 0) {
         return NextResponse.json(
-          { error: `Sorry, ${item.name} is sold out` },
+          { error: `Sorry, "${product.name}" is sold out` },
           { status: 400 }
         )
       }
       if (product.stock_quantity < item.quantity) {
         return NextResponse.json(
-          { error: `Sorry, ${item.name} only has ${product.stock_quantity} left in stock` },
+          { error: `Sorry, "${product.name}" only has ${product.stock_quantity} left in stock` },
           { status: 400 }
         )
       }
@@ -80,12 +82,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
     }
 
-    // Get product UUIDs from database based on names
-    const productNames = items.map((item: any) => item.name)
+    // Re-use the stock data we already fetched (keyed by id)
+    const productIds = items.map((item: any) => item.id)
     const { data: products, error: productsError } = await supabaseAdmin
       .from('products')
       .select('id, name')
-      .in('name', productNames)
+      .in('id', productIds)
 
     if (productsError) {
       console.error('Error fetching products:', productsError)
@@ -95,7 +97,7 @@ export async function POST(request: NextRequest) {
 
     // Create order items with correct product UUIDs
     const orderItems = items.map((item: any) => {
-      const product = products?.find(p => p.name === item.name)
+      const product = products?.find(p => p.id === item.id)
       return {
         order_id: order.id,
         product_id: product?.id,
