@@ -70,6 +70,21 @@ function productToForm(p: Product): Omit<Product, 'id'> {
   }
 }
 
+// Derive a human-readable stock status from form values
+function getStockStatus(form: Omit<Product, 'id'>): string {
+  if (!form.is_active) return 'coming_soon'
+  if (form.stock_quantity === 0) return 'sold_out'
+  if (form.stock_quantity <= (form.reorder_level || 5)) return 'low_stock'
+  return 'in_stock'
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  in_stock: 'In Stock',
+  low_stock: 'Low Stock',
+  sold_out: 'Sold Out',
+  coming_soon: 'Coming Soon',
+}
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -83,7 +98,6 @@ export default function AdminProductsPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [dragOver, setDragOver] = useState(false)
-  // Mobile: track if the edit panel is visible
   const [showEditPanel, setShowEditPanel] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -147,6 +161,27 @@ export default function AdminProductsPage() {
     setImagePreview(URL.createObjectURL(file))
   }
 
+  // Change stock status from dropdown
+  function handleStatusChange(status: string) {
+    setForm(f => {
+      const updates: Partial<Omit<Product, 'id'>> = {}
+      if (status === 'in_stock') {
+        updates.is_active = true
+        if (f.stock_quantity === 0) updates.stock_quantity = 10
+      } else if (status === 'low_stock') {
+        updates.is_active = true
+        // Put them just at the reorder threshold
+        if (f.stock_quantity === 0) updates.stock_quantity = Math.max(1, f.reorder_level || 5)
+      } else if (status === 'sold_out') {
+        updates.is_active = true
+        updates.stock_quantity = 0
+      } else if (status === 'coming_soon') {
+        updates.is_active = false
+      }
+      return { ...f, ...updates }
+    })
+  }
+
   async function uploadImage(productId: string): Promise<string | null> {
     if (!imageFile) return null
     setUploadingImage(true)
@@ -173,6 +208,25 @@ export default function AdminProductsPage() {
     }
   }
 
+  // Sanitise form values before sending to DB:
+  // - empty strings → null for optional text fields (avoids NOT NULL conflicts)
+  // - empty sku → null (avoids unique-index conflicts)
+  function buildPayload(f: Omit<Product, 'id'>): Record<string, unknown> {
+    const { image_url: _omit, ...rest } = f
+    return {
+      ...rest,
+      sku: f.sku?.trim() || null,
+      description: f.description?.trim() || null,
+      weight: f.weight?.trim() || null,
+      burn_time: f.burn_time?.trim() || null,
+      scent: f.scent?.trim() || null,
+      supplier_name: f.supplier_name?.trim() || null,
+      notes: f.notes?.trim() || null,
+      selling_price: f.selling_price,
+      price: f.selling_price ?? f.price,
+    }
+  }
+
   async function handleSave() {
     if (!form.name.trim()) {
       toast.error('Product name is required')
@@ -180,13 +234,7 @@ export default function AdminProductsPage() {
     }
     setSaving(true)
     try {
-      // Build the DB payload — strip image_url since it is not a real DB column
-      const { image_url: _omit, ...formWithoutImageUrl } = form
-      const payload: any = {
-        ...formWithoutImageUrl,
-        selling_price: form.selling_price,
-        price: form.selling_price ?? form.price,
-      }
+      const payload = buildPayload(form)
 
       if (isNew) {
         // 1. Create the product record
@@ -210,7 +258,6 @@ export default function AdminProductsPage() {
               body: JSON.stringify({ image: imageUrl }),
             })
             const patchData = await patchRes.json()
-            // Merge the new image into our local copy regardless of server echo
             createdProduct = {
               ...createdProduct,
               ...(patchRes.ok && patchData.product ? patchData.product : {}),
@@ -221,20 +268,22 @@ export default function AdminProductsPage() {
         }
 
         toast.success('Product created')
+        // Add new product to the top of the list and switch to edit mode
         setProducts(prev => [createdProduct, ...prev])
         setIsNew(false)
         setImageFile(null)
         setImagePreview(null)
         setSelected(createdProduct)
         setForm(productToForm(createdProduct))
+        // On mobile: go back to list so user can see the new product
+        setShowEditPanel(false)
       } else if (selected) {
         // 1. Upload image first if a new file was chosen
         let newImageUrl: string | null = null
         if (imageFile) {
           newImageUrl = await uploadImage(selected.id)
           if (newImageUrl) {
-            // Only set `image` — image_url is not a real DB column
-            payload.image = newImageUrl
+            (payload as any).image = newImageUrl
           }
         }
 
@@ -247,9 +296,7 @@ export default function AdminProductsPage() {
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Update failed')
 
-        // 3. Build the definitive updated product:
-        //    overlay known-good local values on top of the server echo so the UI
-        //    always reflects exactly what was just saved (guards against stale echoes).
+        // 3. Build the definitive updated product
         const serverProduct: Product = data.product
         const updatedProduct: Product = {
           ...serverProduct,
@@ -269,7 +316,6 @@ export default function AdminProductsPage() {
           is_active: form.is_active,
           is_featured: form.is_featured,
           notes: form.notes,
-          // image_url is not a real DB column — derive it purely from what we uploaded
           image: newImageUrl ?? serverProduct.image ?? form.image,
           image_url: newImageUrl ?? form.image_url,
         }
@@ -298,10 +344,9 @@ export default function AdminProductsPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Delete failed')
 
-      // Replace the product in-list with the deactivated version returned by the API
-      const deactivated: Product = data.product
-      setProducts(prev => prev.map(p => p.id === deactivated.id ? deactivated : p))
-      toast.success('Product deactivated')
+      // Remove the product from the list entirely
+      setProducts(prev => prev.filter(p => p.id !== selected.id))
+      toast.success('Product deleted')
       setSelected(null)
       setIsNew(false)
       setForm(EMPTY_FORM)
@@ -316,6 +361,7 @@ export default function AdminProductsPage() {
 
   const profit = (form.selling_price ?? 0) - (form.cost_price ?? 0)
   const currentImage = imagePreview || form.image_url || form.image
+  const stockStatus = getStockStatus(form)
 
   return (
     <div className="flex h-full min-h-screen">
@@ -378,7 +424,7 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
-      {/* Right panel — edit form (inlined to avoid remount-on-render focus loss) */}
+      {/* Right panel — edit form */}
       <div className={`flex-1 min-w-0 overflow-y-auto ${showEditPanel ? 'flex flex-col' : 'hidden md:flex md:flex-col'}`}>
         {!selected && !isNew ? (
           <div className="flex items-center justify-center h-full min-h-[400px] text-gray-400">
@@ -529,7 +575,7 @@ export default function AdminProductsPage() {
                     value={form.weight || ''}
                     onChange={e => setForm(f => ({ ...f, weight: e.target.value }))}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                    placeholder="e.g. 08 oz"
+                    placeholder="e.g. 8 oz"
                   />
                 </div>
               </div>
@@ -575,7 +621,28 @@ export default function AdminProductsPage() {
             {/* INVENTORY */}
             <section className="space-y-3">
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide">Inventory</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Stock Status dropdown */}
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Stock Status</label>
+                  <select
+                    value={stockStatus}
+                    onChange={e => handleStatusChange(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
+                  >
+                    <option value="in_stock">In Stock</option>
+                    <option value="low_stock">Low Stock</option>
+                    <option value="sold_out">Sold Out</option>
+                    <option value="coming_soon">Coming Soon</option>
+                  </select>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {stockStatus === 'sold_out' && 'Sets quantity to 0'}
+                    {stockStatus === 'in_stock' && 'Sets active & quantity ≥ 1'}
+                    {stockStatus === 'low_stock' && 'Active, quantity ≤ reorder level'}
+                    {stockStatus === 'coming_soon' && 'Hidden from shop (inactive)'}
+                  </p>
+                </div>
+                {/* Raw quantity */}
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">Stock Qty</label>
                   <input
@@ -649,28 +716,43 @@ export default function AdminProductsPage() {
             {/* VISIBILITY */}
             <section className="space-y-3">
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide">Visibility</label>
-              <div className="flex flex-wrap gap-4 sm:gap-6">
-                <label className="flex items-center gap-2 cursor-pointer">
+              <div className="rounded-lg border border-gray-200 divide-y divide-gray-100">
+                {/* Active toggle */}
+                <div className="flex items-center justify-between px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">Active (visible on site)</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {form.is_active ? 'Visible in shop and search' : 'Hidden from all public pages'}
+                    </p>
+                  </div>
                   <button
                     type="button"
                     onClick={() => setForm(f => ({ ...f, is_active: !f.is_active }))}
-                    className={`relative w-10 h-5 rounded-full transition-colors ${form.is_active ? 'bg-green-500' : 'bg-gray-300'}`}
+                    className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${form.is_active ? 'bg-green-500' : 'bg-gray-300'}`}
                   >
                     <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.is_active ? 'translate-x-5' : ''}`} />
                   </button>
-                  <span className="text-sm text-gray-700">Active (visible on site)</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
+                </div>
+                {/* Featured toggle */}
+                <div className="flex items-center justify-between px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">Featured on Homepage</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {form.is_featured ? 'Shown in the homepage collection' : 'Not shown on the homepage'}
+                    </p>
+                  </div>
                   <button
                     type="button"
                     onClick={() => setForm(f => ({ ...f, is_featured: !f.is_featured }))}
-                    className={`relative w-10 h-5 rounded-full transition-colors ${form.is_featured ? 'bg-purple-500' : 'bg-gray-300'}`}
+                    className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${form.is_featured ? 'bg-purple-500' : 'bg-gray-300'}`}
                   >
                     <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.is_featured ? 'translate-x-5' : ''}`} />
                   </button>
-                  <span className="text-sm text-gray-700">Featured (homepage)</span>
-                </label>
+                </div>
               </div>
+              <p className="text-xs text-gray-400">
+                Must be <strong>Active</strong> to appear on the site. Toggle <strong>Featured</strong> to show/hide from the homepage collection.
+              </p>
             </section>
 
             {/* ACTIONS */}
@@ -696,8 +778,8 @@ export default function AdminProductsPage() {
                     </button>
                   ) : (
                     <div className="border border-red-200 rounded-lg p-4 bg-red-50 space-y-3">
-                      <p className="text-sm text-red-800 font-medium">Are you sure? This cannot be undone.</p>
-                      <p className="text-xs text-red-600">The product will be deactivated to preserve order history.</p>
+                      <p className="text-sm text-red-800 font-medium">Permanently delete &ldquo;{selected.name}&rdquo;?</p>
+                      <p className="text-xs text-red-600">This cannot be undone. The product will be removed from your store.</p>
                       <div className="flex gap-2">
                         <button
                           onClick={handleDelete}

@@ -24,10 +24,11 @@ export function ProductGridSection() {
   const fetchProducts = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/products', { cache: 'no-store' })
+      // Only active + featured products appear on the homepage
+      const response = await fetch('/api/products?featured=true', { cache: 'no-store' })
       if (!response.ok) throw new Error('Failed to fetch products')
       const data = await response.json()
-      const displayProducts = data.products
+      const displayProducts = (data.products as Product[])
         .slice(0, 8)
         .map((p: Product) => toProductDisplay(p))
       setProducts(displayProducts)

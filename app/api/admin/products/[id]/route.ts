@@ -49,18 +49,15 @@ export async function DELETE(
 
   const { id } = await params
 
-  // Soft delete — set is_active = false to preserve order history
-  const { data: product, error } = await supabaseAdmin
+  const { error } = await supabaseAdmin
     .from('products')
-    .update({ is_active: false })
+    .delete()
     .eq('id', id)
-    .select()
-    .single()
 
   if (error) {
     console.error('Admin products DELETE error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ product })
+  return NextResponse.json({ success: true })
 }
