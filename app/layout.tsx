@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Playfair_Display, Inter } from "next/font/google"
+import { Playfair_Display, DM_Sans } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
@@ -14,7 +14,7 @@ const playfairDisplay = Playfair_Display({
   display: "swap",
 })
 
-const inter = Inter({
+const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
@@ -33,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${playfairDisplay.variable} ${inter.variable} font-body antialiased`}>
+      <body className={`${playfairDisplay.variable} ${dmSans.variable} font-body antialiased`}>
         <Providers>
           <Suspense fallback={<div>Loading...</div>}>
             <Navbar />

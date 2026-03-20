@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback, memo } from "react"
 import Image from "next/image"
 import { Check, ShoppingBag } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -35,7 +35,9 @@ function getScentPills(product: ProductDisplay): Array<{ label: string; value: s
   return pills.slice(0, 3)
 }
 
-export function ProductCard({
+// React.memo prevents re-renders when parent updates but props haven't changed
+// (SKILL.md: "React.memo for pure components")
+export const ProductCard = memo(function ProductCard({
   product,
   onCardClick,
   dimmed,
@@ -49,8 +51,10 @@ export function ProductCard({
   const img  = product.image || "/placeholder.svg"
   const pills = getScentPills(product)
 
-  const handleQuickAdd = (e: React.MouseEvent) => {
-    e.stopPropagation() // never opens the quick-view drawer
+  // useCallback so the function reference is stable across re-renders
+  // (SKILL.md: "useCallback for functions passed to children")
+  const handleQuickAdd = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
     if (product.soldOut || addedState === "added") return
 
     addItem({
@@ -63,7 +67,7 @@ export function ProductCard({
 
     setAddedState("added")
     setTimeout(() => setAddedState("idle"), 1000)
-  }
+  }, [product, addedState, addItem, img])
 
   return (
     <div
@@ -173,14 +177,14 @@ export function ProductCard({
       </div>
 
       {/* ── Name + Price below image ──────────────────────────────── */}
-      <div className="mt-4 sm:mt-5 text-center">
-        <h3 className="font-heading text-base sm:text-lg font-normal tracking-tight">
+      <div className="mt-4 sm:mt-5 text-center px-1">
+        <h3 className="font-heading text-base sm:text-lg font-light tracking-wide leading-snug group-hover:text-foreground/70 transition-colors duration-200">
           {product.name}
         </h3>
-        <p className="mt-1 font-body text-sm text-foreground/60">
-          {product.price > 0 ? `$${product.price}` : "—"}
+        <p className="mt-1.5 font-body text-sm tracking-widest text-foreground/50">
+          {product.price > 0 ? `$${product.price.toFixed(2)}` : "—"}
         </p>
       </div>
     </div>
   )
-}
+})

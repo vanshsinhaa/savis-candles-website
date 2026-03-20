@@ -25,7 +25,15 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const adminMenuRef = useRef<HTMLDivElement>(null)
+
+  // Add glass background once user scrolls past the hero fold
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => { setIsClient(true) }, [])
 
@@ -69,7 +77,12 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-30 bg-transparent">
+      <nav className={cn(
+        "fixed top-0 left-0 right-0 z-30 transition-all duration-300",
+        scrolled
+          ? "bg-background/90 backdrop-blur-md border-b border-border/40 shadow-sm shadow-amber-900/5"
+          : "bg-transparent"
+      )}>
         <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex items-center justify-between">
             {/* Logo */}
