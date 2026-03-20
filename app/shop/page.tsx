@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import { ProductDisplay, toProductDisplay, Product } from "@/lib/supabase"
-import { QuickViewDrawer } from "@/components/quick-view-drawer"
 import { ProductCard } from "@/components/product-card"
 import { FooterGradient } from "@/components/footer-gradient"
 import { useScrollReveal } from "@/hooks/use-scroll-reveal"
@@ -12,8 +11,6 @@ export default function ShopPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const [selectedProduct, setSelectedProduct] = useState<ProductDisplay | null>(null)
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
   const gridRef = useRef<HTMLDivElement>(null)
   useScrollReveal(gridRef, products.length)
@@ -36,11 +33,6 @@ export default function ShopPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleProductClick = (product: ProductDisplay) => {
-    setSelectedProduct(product)
-    setIsDrawerOpen(true)
   }
 
   if (loading) {
@@ -119,7 +111,6 @@ export default function ShopPage() {
               <div key={product.id} className="reveal">
                 <ProductCard
                   product={product}
-                  onCardClick={handleProductClick}
                   dimmed={hoveredId !== null && hoveredId !== product.id}
                   onMouseEnter={() => setHoveredId(product.id)}
                   onMouseLeave={() => setHoveredId(null)}
@@ -131,8 +122,6 @@ export default function ShopPage() {
 
         <FooterGradient />
       </main>
-
-      <QuickViewDrawer product={selectedProduct} open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
     </>
   )
 }

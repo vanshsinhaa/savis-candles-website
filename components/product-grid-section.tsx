@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react"
 import { ProductDisplay, toProductDisplay, Product } from "@/lib/supabase"
-import { QuickViewDrawer } from "@/components/quick-view-drawer"
 import { ProductCard } from "@/components/product-card"
 import { useScrollReveal } from "@/hooks/use-scroll-reveal"
 
@@ -11,8 +10,6 @@ export function ProductGridSection() {
   const [products, setProducts] = useState<ProductDisplay[]>([])
   const [loading, setLoading] = useState(true)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const [selectedProduct, setSelectedProduct] = useState<ProductDisplay | null>(null)
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
   // Re-run observer once products load so the freshly-rendered cards are found
   useScrollReveal(sectionRef, products.length)
@@ -37,11 +34,6 @@ export function ProductGridSection() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleProductClick = (product: ProductDisplay) => {
-    setSelectedProduct(product)
-    setIsDrawerOpen(true)
   }
 
   return (
@@ -71,7 +63,6 @@ export function ProductGridSection() {
                 <div key={product.id} className="reveal">
                   <ProductCard
                     product={product}
-                    onCardClick={handleProductClick}
                     dimmed={hoveredId !== null && hoveredId !== product.id}
                     onMouseEnter={() => setHoveredId(product.id)}
                     onMouseLeave={() => setHoveredId(null)}
@@ -83,7 +74,6 @@ export function ProductGridSection() {
         </div>
       </section>
 
-      <QuickViewDrawer product={selectedProduct} open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
     </>
   )
 }

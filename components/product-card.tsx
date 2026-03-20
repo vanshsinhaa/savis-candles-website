@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, memo } from "react"
+import Link from "next/link"
 import Image from "next/image"
 import { Check, ShoppingBag } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -9,37 +10,30 @@ import type { ProductDisplay } from "@/lib/supabase"
 
 interface ProductCardProps {
   product: ProductDisplay
-  onCardClick: (product: ProductDisplay) => void
   dimmed: boolean
   onMouseEnter: () => void
   onMouseLeave: () => void
-  /** Extra class applied to the outermost wrapper — e.g. GSAP class names */
+  /** Extra class applied to the outermost wrapper */
   className?: string
 }
 
-/**
- * Derive up to 3 pills from available product data.
- * If scent is populated (old products), use Top/Heart/Base.
- * Otherwise fall back to Type/Size from category + weight.
- */
 function getScentPills(product: ProductDisplay): Array<{ label: string; value: string }> {
   if (product.scent && product.scent.trim()) {
-    const notes = product.scent.split(",").map((s) => s.trim()).filter(Boolean)
+    const notes  = product.scent.split(",").map(s => s.trim()).filter(Boolean)
     const labels = ["Top", "Heart", "Base"]
     return notes.slice(0, 3).map((note, i) => ({ label: labels[i], value: note }))
   }
   const pills: Array<{ label: string; value: string }> = []
-  if (product.category) pills.push({ label: "Type", value: product.category })
-  if (product.weight)   pills.push({ label: "Size", value: product.weight })
-  if (product.sku)      pills.push({ label: "SKU",  value: product.sku })
+  if (product.category) pills.push({ label: "Type",  value: product.category })
+  if (product.weight)   pills.push({ label: "Size",  value: product.weight })
+  if (product.sku)      pills.push({ label: "SKU",   value: product.sku })
   return pills.slice(0, 3)
 }
 
-// React.memo prevents re-renders when parent updates but props haven't changed
+// React.memo prevents re-renders when grid state changes but this card's props haven't
 // (SKILL.md: "React.memo for pure components")
 export const ProductCard = memo(function ProductCard({
   product,
-  onCardClick,
   dimmed,
   onMouseEnter,
   onMouseLeave,
@@ -48,12 +42,13 @@ export const ProductCard = memo(function ProductCard({
   const { addItem } = useCart()
   const [addedState, setAddedState] = useState<"idle" | "added">("idle")
 
-  const img  = product.image || "/placeholder.svg"
+  const img   = product.image || "/placeholder.svg"
   const pills = getScentPills(product)
 
   // useCallback so the function reference is stable across re-renders
   // (SKILL.md: "useCallback for functions passed to children")
   const handleQuickAdd = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()  // stop Link from navigating
     e.stopPropagation()
     if (product.soldOut || addedState === "added") return
 
@@ -70,21 +65,22 @@ export const ProductCard = memo(function ProductCard({
   }, [product, addedState, addItem, img])
 
   return (
-    <div
+    <Link
+      href={`/shop/${product.id}`}
       className={cn(
-        "group relative cursor-pointer transition-opacity duration-300",
+        "group relative block transition-opacity duration-300",
         dimmed && "opacity-30",
         className,
       )}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      onClick={() => onCardClick(product)}
     >
-      {/* ── Image container ─────────────────────────────────────────
-          overflow-hidden clips the reveal panel until it slides up  */}
-      <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-secondary">
+      {/* ── Square image container ─────────────────────────────────
+          aspect-square makes the card 1:1 as requested.
+          overflow-hidden clips the hover reveal panel.            */}
+      <div className="relative aspect-square overflow-hidden rounded-xl bg-secondary">
 
-        {/* Primary image — always visible, subtle scale on hover */}
+        {/* Primary image */}
         <Image
           src={img}
           alt={product.name}
@@ -92,14 +88,9 @@ export const ProductCard = memo(function ProductCard({
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
-        {/* Hover layer — same image + warm amber wash, crossfades in 400ms */}
+        {/* Hover layer — warm amber wash crossfades in */}
         <div className="absolute inset-0 opacity-0 transition-opacity duration-[400ms] group-hover:opacity-100 pointer-events-none">
-          <Image
-            src={img}
-            alt={product.name}
-            fill
-            className="object-cover"
-          />
+          <Image src={img} alt={product.name} fill className="object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-amber-900/30 via-amber-700/10 to-transparent" />
         </div>
 
@@ -109,28 +100,22 @@ export const ProductCard = memo(function ProductCard({
             Sold Out
           </span>
         )}
-        {!product.soldOut &&
-          product.stockQuantity > 0 &&
-          product.reorderLevel > 0 &&
-          product.stockQuantity <= product.reorderLevel && (
-            <span className="absolute left-3 top-3 z-10 rounded-md bg-yellow-500 px-2 py-1 text-xs font-body font-medium text-white">
-              Low Stock
-            </span>
-          )}
+        {!product.soldOut && product.stockQuantity > 0 && product.reorderLevel > 0 && product.stockQuantity <= product.reorderLevel && (
+          <span className="absolute left-3 top-3 z-10 rounded-md bg-amber-500 px-2 py-1 text-xs font-body font-medium text-white">
+            Low Stock
+          </span>
+        )}
 
-        {/* ── Hover reveal panel ──────────────────────────────────────
-            Starts below the card (translate-y-full, clipped by overflow-hidden).
-            Slides up to translate-y-0 on group-hover in 300ms.             */}
+        {/* ── Hover reveal panel — Quick Add button only ────────────
+            Slides up from below on group-hover.                   */}
         <div
           className="absolute inset-x-0 bottom-0 z-10 translate-y-full transition-transform duration-300 ease-in-out group-hover:translate-y-0"
-          onClick={(e) => e.stopPropagation()} // clicks on panel don't open drawer
+          onClick={e => e.preventDefault()} // prevent Link when clicking the panel background
         >
           <div className="bg-white/88 backdrop-blur-md px-4 pt-3 pb-4 space-y-3">
-
-            {/* Scent / attribute pills */}
             {pills.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
-                {pills.map((pill) => (
+                {pills.map(pill => (
                   <span
                     key={pill.label}
                     className="inline-flex items-center gap-1 rounded-full border border-foreground/10 bg-white/70 px-2.5 py-0.5"
@@ -146,7 +131,6 @@ export const ProductCard = memo(function ProductCard({
               </div>
             )}
 
-            {/* Quick Add button */}
             <button
               onClick={handleQuickAdd}
               disabled={product.soldOut}
@@ -171,12 +155,11 @@ export const ProductCard = memo(function ProductCard({
                 </>
               )}
             </button>
-
           </div>
         </div>
       </div>
 
-      {/* ── Name + Price below image ──────────────────────────────── */}
+      {/* ── Name + Price below image ── */}
       <div className="mt-4 sm:mt-5 text-center px-1">
         <h3 className="font-heading text-base sm:text-lg font-light tracking-wide leading-snug group-hover:text-foreground/70 transition-colors duration-200">
           {product.name}
@@ -185,6 +168,6 @@ export const ProductCard = memo(function ProductCard({
           {product.price > 0 ? `$${product.price.toFixed(2)}` : "—"}
         </p>
       </div>
-    </div>
+    </Link>
   )
 })
